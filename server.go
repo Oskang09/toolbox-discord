@@ -16,6 +16,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer discord.Close()
+
+	discord.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
+		s.UpdateGameStatus(0, "with Tools")
+	})
 
 	discord.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if h, ok := commands[i.Data.Name]; ok {
@@ -55,5 +60,4 @@ func main() {
 	}
 
 	closer()
-	discord.Close()
 }
