@@ -1,3 +1,5 @@
+![image](https://user-images.githubusercontent.com/15674107/119238101-18677a80-bb73-11eb-9fee-483807b9d3d0.png)
+
 # toolbox
 
 personal discord toolbox bot mainly for speed up problem fixing by adding some utility that always have to use when development & solving issues.
@@ -26,3 +28,5 @@ type config struct {
 	} `json:"ngrok"`
 }
 ```
+
+2. Start your bot by `go run .` or build binary with `go build`.
