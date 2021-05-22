@@ -26,3 +26,5 @@ type config struct {
 	} `json:"ngrok"`
 }
 ```
+
+2. Start your bot by `go run .` or build binary with `go build`.
