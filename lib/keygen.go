@@ -7,8 +7,10 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
+	uuid "github.com/satori/go.uuid"
 )
 
 func (cfg config) Keygen() command {
@@ -64,11 +66,21 @@ func (cfg config) Keygen() command {
 						},
 					},
 				},
+				{
+					Name:        "uuid",
+					Description: "generate uuid with version 4",
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+				},
+				{
+					Name:        "tuid",
+					Description: "generate uid based on timestamp",
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+				},
 			},
 		},
 		Handler: map[string]commandHandler{
 			"rsa": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-				bitSize := i.Data.Options[0].Options[0].Value.(float64)
+				bitSize := i.Data.Options[0].Options[0].IntValue()
 				privKey, err := rsa.GenerateKey(rand.Reader, int(bitSize))
 				if err != nil {
 					s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -117,6 +129,22 @@ func (cfg config) Keygen() command {
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
 					Data: &discordgo.InteractionApplicationCommandResponseData{
 						Embeds: []*discordgo.MessageEmbed{generateSuccess("RSA " + fmt.Sprintf("%v", bitSize) + " Keys")},
+					},
+				})
+			},
+			"uuid": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionApplicationCommandResponseData{
+						Content: fmt.Sprintf("%v", uuid.NewV4()),
+					},
+				})
+			},
+			"tuid": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionApplicationCommandResponseData{
+						Content: fmt.Sprintf("%v", time.Now().Format("06010215040500")),
 					},
 				})
 			},

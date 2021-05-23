@@ -77,7 +77,7 @@ func (cfg config) Datastore() command {
 		Handler: map[string]commandHandler{
 			"encode": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				response := ""
-				value := i.Data.Options[0].Options[0].Value.(string)
+				value := i.Data.Options[0].Options[0].StringValue()
 				if !strings.HasPrefix(value, "/") {
 					value = "/" + value
 				}
@@ -98,7 +98,7 @@ func (cfg config) Datastore() command {
 			},
 			"decode": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				response := ""
-				value := i.Data.Options[0].Options[0].Value.(string)
+				value := i.Data.Options[0].Options[0].StringValue()
 				key, err := datastore.DecodeKey(value)
 				if err != nil {
 					response = "Error: " + err.Error()

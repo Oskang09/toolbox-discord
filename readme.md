@@ -11,6 +11,8 @@ personal discord toolbox bot mainly for speed up problem fixing by adding some u
 3. Datastore Key Encode, Decode
 4. URL Parsing ( to have a better view )
 5. Ngrok IP ( get hosted public ip )
+6. Random characters generator ( alphabet, numeric, symbol )
+7. Keygen UUID and TUID ( timestmap based uid )
 
 # Make your own
 
