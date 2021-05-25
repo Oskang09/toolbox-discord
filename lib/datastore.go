@@ -11,7 +11,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func (cfg config) Datastore() command {
+func (cfg *config) Datastore() command {
 
 	generateEmbed := func(title string, before string, after string) *discordgo.MessageEmbed {
 		contents := []string{

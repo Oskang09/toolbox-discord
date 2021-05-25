@@ -10,12 +10,25 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+const banner = `
+████████╗ ██████╗  ██████╗ ██╗     ██████╗  ██████╗ ██╗  ██╗
+╚══██╔══╝██╔═══██╗██╔═══██╗██║     ██╔══██╗██╔═══██╗╚██╗██╔╝
+   ██║   ██║   ██║██║   ██║██║     ██████╔╝██║   ██║ ╚███╔╝ 
+   ██║   ██║   ██║██║   ██║██║     ██╔══██╗██║   ██║ ██╔██╗ 
+   ██║   ╚██████╔╝╚██████╔╝███████╗██████╔╝╚██████╔╝██╔╝ ██╗
+   ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝╚═════╝  ╚═════╝ ╚═╝  ╚═╝
+`
+
 func main() {
+
+	fmt.Println(banner)
+
 	config, commands, closer := lib.New()
-	discord, err := discordgo.New("Bot " + config.Token)
+	discord, err := discordgo.New("Bot " + config.Discord.BotToken)
 	if err != nil {
 		panic(err)
 	}
+	defer closer()
 	defer discord.Close()
 
 	discord.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
@@ -33,18 +46,19 @@ func main() {
 
 	registeredCommandList := make([]*discordgo.ApplicationCommand, 0)
 	for _, cmd := range commands {
-		registeredCmd, err := discord.ApplicationCommandCreate(discord.State.User.ID, config.Server, &cmd.Registry)
+		registeredCmd, err := discord.ApplicationCommandCreate(discord.State.User.ID, config.Discord.ServerID, &cmd.Registry)
 		if err != nil {
 			panic(err)
 		}
 		registeredCommandList = append(registeredCommandList, registeredCmd)
 	}
 
-	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
+	fmt.Println("")
+	fmt.Println(">> Service is now ready! Press CTRL-C to exit.")
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-sc
-	fmt.Println("Shutting down ...")
+	fmt.Println("Shutting down services ...")
 
 	for _, cmd := range commands {
 		if cmd.Closer != nil {
@@ -53,11 +67,9 @@ func main() {
 	}
 
 	for _, cmd := range registeredCommandList {
-		err := discord.ApplicationCommandDelete(cmd.ApplicationID, config.Server, cmd.ID)
+		err := discord.ApplicationCommandDelete(cmd.ApplicationID, config.Discord.ServerID, cmd.ID)
 		if err != nil {
 			panic(err)
 		}
 	}
-
-	closer()
 }

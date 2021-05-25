@@ -13,7 +13,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-func (cfg config) Keygen() command {
+func (cfg *config) Keygen() command {
 
 	generateSuccess := func(title string) *discordgo.MessageEmbed {
 		return &discordgo.MessageEmbed{

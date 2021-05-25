@@ -8,7 +8,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func (cfg config) URL() command {
+func (cfg *config) URL() command {
 
 	codeBlock := func(text string) string {
 		return "`" + text + "`"

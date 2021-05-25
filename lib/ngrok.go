@@ -10,7 +10,12 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func (cfg config) NgrokCmd() command {
+// State Key
+var (
+	StateNgrokPublicIpKey = "NGROK_PUBLIC_IP"
+)
+
+func (cfg *config) NgrokCmd() command {
 
 	wd, _ := os.Getwd()
 
@@ -27,9 +32,7 @@ func (cfg config) NgrokCmd() command {
 	commands := make([]string, 0)
 	commands = append(commands, cfg.Ngrok.Type)
 	commands = append(commands, cfg.Ngrok.Port)
-	if cfg.Ngrok.Region != "" {
-		commands = append(commands, "-region="+cfg.Ngrok.Region)
-	}
+	commands = append(commands, cfg.Ngrok.Args...)
 
 	cmd := exec.Command("ngrok.exe", commands...)
 	cmd.Dir = wd + "/cli"
@@ -61,6 +64,8 @@ func (cfg config) NgrokCmd() command {
 		panic(err)
 	}
 
+	cfg.State[StateNgrokPublicIpKey] = httpResponse.PublicURL
+
 	return command{
 		Registry: discordgo.ApplicationCommand{
 			Name:        "ngrok",
@@ -82,6 +87,11 @@ func (cfg config) NgrokCmd() command {
 							{
 								Title: "Ngrok",
 								Fields: []*discordgo.MessageEmbedField{
+									{
+										Name:   "Domain IP",
+										Value:  cfg.Domain,
+										Inline: true,
+									},
 									{
 										Name:   "Public IP",
 										Value:  httpResponse.PublicURL,

@@ -9,7 +9,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func (cfg config) Random() command {
+func (cfg *config) Random() command {
 	rand.Seed(time.Now().UnixNano())
 
 	var specialAlphanumeric = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")

@@ -13,6 +13,8 @@ personal discord toolbox bot mainly for speed up problem fixing by adding some u
 5. Ngrok IP ( get hosted public ip )
 6. Random characters generator ( alphabet, numeric, symbol )
 7. Keygen UUID and TUID ( timestmap based uid )
+8. Shortlink Creator
+9. File Serving
 
 # Make your own
 
@@ -20,15 +22,32 @@ personal discord toolbox bot mainly for speed up problem fixing by adding some u
 
 ```go
 type config struct {
-	Token   string `json:"token"` // Discord bot token
-	Server  string `json:"server"` // Your personal server id
-	Ngrok   struct { 
-		Type   string `json:"type"` // Start port in? http, tcp
-		Port   string `json:"port"` // Port numbr
-		Region string `json:"region"` // Region
-		Token  string `json:"authtoken"` // AuthToken
+	Discord struct {
+		BotToken string `json:"botToken"` // Discord bot token
+		ServerID string `json:"serverId"` // Your personal server id
+	} `json:"discord"`
+	Ngrok struct {
+		Type  string   `json:"type"` // Start port in? http, tcp
+		Port  string   `json:"port"` // Port numbr
+		Token string   `json:"authtoken"`// AuthToken
+		Args  []string `json:"args"` // Extra arguments for setup -auth, -region, 
 	} `json:"ngrok"`
+	Shortlink struct {
+		Authenticate bool `json:"auth"` // use authenticate
+		Username  string `json:"username"` // Auth username
+		Password  string `json:"password"` // Auth password
+	} `json:"shortlink"`
+	FileServer struct {
+		Authenticate bool `json:"auth"` // use authenticate
+		Username  string `json:"username"` // Auth username
+		Password  string `json:"password"` // Auth password
+	} `json:"fileServer"`
 }
 ```
 
-2. Start your bot by `go run .` or build binary with `go build`.
+2. Create `data.json` and leave it empty.
+3. Start your bot by `go run .` or build binary with `go build`.
+
+# Extra: Startup Application
+
+Start bot when computer startup, for Windows 10 users you can use "Windows + R" and type "shell:startup". After folder popup, just put built binrary shortcut inside. If you want move binary directly inside, you must move `lib` folder too, since it's depend on the `ngrok.exe` cli aslo `config.json` and `data.json`.

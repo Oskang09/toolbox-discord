@@ -8,7 +8,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func (cfg config) Base64() command {
+func (cfg *config) Base64() command {
 
 	generateEmbed := func(title string, before string, after string) *discordgo.MessageEmbed {
 		contents := []string{
