@@ -6,13 +6,9 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/bwmarrin/discordgo"
-)
-
-// State Key
-var (
-	StateNgrokPublicIpKey = "NGROK_PUBLIC_IP"
 )
 
 func (cfg *config) NgrokCmd() command {
@@ -64,7 +60,10 @@ func (cfg *config) NgrokCmd() command {
 		panic(err)
 	}
 
-	cfg.State[StateNgrokPublicIpKey] = httpResponse.PublicURL
+	// fallback for those don't have domain will use ngrok public ip
+	if cfg.Domain == "" {
+		cfg.Domain = strings.TrimRight(httpResponse.PublicURL, "/")
+	}
 
 	return command{
 		Registry: discordgo.ApplicationCommand{
