@@ -98,7 +98,7 @@ func (cfg *config) NgrokCmd() command {
 									},
 									{
 										Name:   "WebUI IP",
-										Value:  "http://127.0.0.1",
+										Value:  "http://127.0.0.1:4040",
 										Inline: true,
 									},
 								},
