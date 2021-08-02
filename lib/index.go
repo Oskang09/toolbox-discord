@@ -143,6 +143,9 @@ func New() (*config, map[string]command, func()) {
 
 		path := strings.TrimLeft(r.URL.Path, "/file/")
 		if file, ok := cfg.Data.Files[path]; ok {
+			if strings.HasSuffix(file, ".apk") {
+				w.Header().Add("Content-Type", "application/vnd.android.package-archive")
+			}
 			http.ServeFile(w, r, file)
 		} else {
 			template.ExecuteTemplate(w, "status.html", http.StatusNotFound)
