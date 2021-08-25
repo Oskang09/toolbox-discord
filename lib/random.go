@@ -176,11 +176,9 @@ func (cfg *config) Random() command {
 
 					case "uppercase":
 						val = strings.ToUpper(val)
-						break
 
 					case "lowercase":
 						val = strings.ToLower(val)
-						break
 
 					}
 				}
@@ -223,11 +221,9 @@ func (cfg *config) Random() command {
 
 					case "uppercase":
 						val = strings.ToUpper(val)
-						break
 
 					case "lowercase":
 						val = strings.ToLower(val)
-						break
 
 					}
 				}
@@ -254,11 +250,9 @@ func (cfg *config) Random() command {
 
 					case "uppercase":
 						val = strings.ToUpper(val)
-						break
 
 					case "lowercase":
 						val = strings.ToLower(val)
-						break
 
 					}
 				}

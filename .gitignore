@@ -1,3 +1,5 @@
 config.json
 data.json
 toolbox-discord.exe
+cli/ffmpeg.exe
+cli/ngrok.exe
