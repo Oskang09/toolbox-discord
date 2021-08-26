@@ -59,19 +59,19 @@ func (cfg *config) Base64() command {
 		},
 		Handler: map[string]commandHandler{
 			"encode": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-				value := []byte(i.Data.Options[0].Options[0].StringValue())
+				value := []byte(i.ApplicationCommandData().Options[0].Options[0].StringValue())
 				encodedBytes := base64.RawStdEncoding.EncodeToString(value)
 
 				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
-					Data: &discordgo.InteractionApplicationCommandResponseData{
+					Data: &discordgo.InteractionResponseData{
 						Embeds: []*discordgo.MessageEmbed{generateEmbed("Base64 Encode", string(value), string(encodedBytes))},
 					},
 				})
 			},
 			"decode": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				response := ""
-				value := i.Data.Options[0].Options[0].StringValue()
+				value := i.ApplicationCommandData().Options[0].Options[0].StringValue()
 				decodedBytes, err := base64.RawStdEncoding.DecodeString(value)
 				if err != nil {
 					response = "Error: " + err.Error()
@@ -81,7 +81,7 @@ func (cfg *config) Base64() command {
 
 				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
-					Data: &discordgo.InteractionApplicationCommandResponseData{
+					Data: &discordgo.InteractionResponseData{
 						Embeds: []*discordgo.MessageEmbed{generateEmbed("Base64 Decode", string(value), string(response))},
 					},
 				})

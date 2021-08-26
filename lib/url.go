@@ -36,12 +36,12 @@ func (cfg *config) URL() command {
 		},
 		Handler: map[string]commandHandler{
 			"parse": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-				rurl := i.Data.Options[0].Options[0].Value.(string)
+				rurl := i.ApplicationCommandData().Options[0].Options[0].Value.(string)
 				parsedUrl, err := url.Parse(rurl)
 				if err != nil {
 					s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 						Type: discordgo.InteractionResponseChannelMessageWithSource,
-						Data: &discordgo.InteractionApplicationCommandResponseData{
+						Data: &discordgo.InteractionResponseData{
 							Embeds: []*discordgo.MessageEmbed{
 								{
 									Title: "URL Parse",
@@ -72,7 +72,7 @@ func (cfg *config) URL() command {
 
 				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
-					Data: &discordgo.InteractionApplicationCommandResponseData{
+					Data: &discordgo.InteractionResponseData{
 						Content: strings.Join(contents, "\n"),
 					},
 				})

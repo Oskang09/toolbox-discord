@@ -25,14 +25,11 @@ type command struct {
 }
 
 type config struct {
-	Domain      string                 `json:"domain"`
-	Services    map[string]bool        `json:"services"`
-	State       map[string]interface{} `json:"-"`
-	Data        *data                  `json:"data"`
-	MusicPlayer struct {
-		VoiceChannel string `json:"voiceChannel"`
-	} `json:"musicPlayer"`
-	Discord struct {
+	Domain   string                 `json:"domain"`
+	Services map[string]bool        `json:"services"`
+	State    map[string]interface{} `json:"-"`
+	Data     *data                  `json:"data"`
+	Discord  struct {
 		BotToken string `json:"botToken"`
 		ServerID string `json:"serverId"`
 	} `json:"discord"`
@@ -114,60 +111,60 @@ func New() (*config, map[string]command, func()) {
 	template := template.Must(template.ParseGlob("html/*.html"))
 	handler := new(extension.RegexpHandler)
 
-	if cfg.hasServiceEnabled("shortcut") {
-		exp, _ := regexp.Compile("/shortcut/\\w+")
-		handler.HandleFunc(exp, func(w http.ResponseWriter, r *http.Request) {
-			if cfg.Shortlink.Authenticate {
-				responseCode, invalidPassword := extension.BasicAuth(cfg.Shortlink.Username, cfg.Shortlink.Password, w, r)
-				if invalidPassword {
-					template.ExecuteTemplate(w, "status.html", http.StatusUnauthorized)
-					return
+	if cfg.hasServiceEnabled("ngrok") {
+		if cfg.hasServiceEnabled("shortcut") {
+			exp, _ := regexp.Compile("/shortcut/\\w+")
+			handler.HandleFunc(exp, func(w http.ResponseWriter, r *http.Request) {
+				if cfg.Shortlink.Authenticate {
+					responseCode, invalidPassword := extension.BasicAuth(cfg.Shortlink.Username, cfg.Shortlink.Password, w, r)
+					if invalidPassword {
+						template.ExecuteTemplate(w, "status.html", http.StatusUnauthorized)
+						return
+					}
+
+					if responseCode != 0 {
+						w.WriteHeader(responseCode)
+						return
+					}
 				}
 
-				if responseCode != 0 {
-					w.WriteHeader(responseCode)
-					return
+				path := strings.TrimLeft(r.URL.Path, "/shortcut/")
+				if url, ok := cfg.Data.Shortcuts[path]; ok {
+					http.Redirect(w, r, url, http.StatusTemporaryRedirect)
+				} else {
+					template.ExecuteTemplate(w, "status.html", http.StatusNotFound)
 				}
-			}
+			})
+		}
 
-			path := strings.TrimLeft(r.URL.Path, "/shortcut/")
-			if url, ok := cfg.Data.Shortcuts[path]; ok {
-				http.Redirect(w, r, url, http.StatusTemporaryRedirect)
-			} else {
-				template.ExecuteTemplate(w, "status.html", http.StatusNotFound)
-			}
-		})
-	}
+		if cfg.hasServiceEnabled("file") {
+			exp, _ := regexp.Compile("/file/\\w+")
+			handler.HandleFunc(exp, func(w http.ResponseWriter, r *http.Request) {
+				if cfg.FileServer.Authenticate {
+					responseCode, invalidPassword := extension.BasicAuth(cfg.FileServer.Username, cfg.FileServer.Password, w, r)
+					if invalidPassword {
+						template.ExecuteTemplate(w, "status.html", http.StatusUnauthorized)
+						return
+					}
 
-	if cfg.hasServiceEnabled("file") {
-		exp, _ := regexp.Compile("/file/\\w+")
-		handler.HandleFunc(exp, func(w http.ResponseWriter, r *http.Request) {
-			if cfg.FileServer.Authenticate {
-				responseCode, invalidPassword := extension.BasicAuth(cfg.FileServer.Username, cfg.FileServer.Password, w, r)
-				if invalidPassword {
-					template.ExecuteTemplate(w, "status.html", http.StatusUnauthorized)
-					return
+					if responseCode != 0 {
+						w.WriteHeader(responseCode)
+						return
+					}
 				}
 
-				if responseCode != 0 {
-					w.WriteHeader(responseCode)
-					return
+				path := strings.TrimLeft(r.URL.Path, "/file/")
+				if file, ok := cfg.Data.Files[path]; ok {
+					if strings.HasSuffix(file, ".apk") {
+						w.Header().Add("Content-Type", "application/vnd.android.package-archive")
+					}
+					http.ServeFile(w, r, file)
+				} else {
+					template.ExecuteTemplate(w, "status.html", http.StatusNotFound)
 				}
-			}
+			})
+		}
 
-			path := strings.TrimLeft(r.URL.Path, "/file/")
-			if file, ok := cfg.Data.Files[path]; ok {
-				if strings.HasSuffix(file, ".apk") {
-					w.Header().Add("Content-Type", "application/vnd.android.package-archive")
-				}
-				http.ServeFile(w, r, file)
-			} else {
-				template.ExecuteTemplate(w, "status.html", http.StatusNotFound)
-			}
-		})
-	}
-
-	if cfg.hasServiceEnabled("shortcut") || cfg.hasServiceEnabled("file") {
 		go http.ListenAndServe(":"+cfg.Ngrok.Port, handler)
 	}
 

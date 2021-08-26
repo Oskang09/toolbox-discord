@@ -142,12 +142,12 @@ func (cfg *config) Random() command {
 		},
 		Handler: map[string]commandHandler{
 			"number": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-				min := i.Data.Options[0].Options[0].IntValue()
-				max := i.Data.Options[0].Options[1].IntValue()
+				min := i.ApplicationCommandData().Options[0].Options[0].IntValue()
+				max := i.ApplicationCommandData().Options[0].Options[1].IntValue()
 				if min >= max {
 					s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 						Type: discordgo.InteractionResponseChannelMessageWithSource,
-						Data: &discordgo.InteractionApplicationCommandResponseData{
+						Data: &discordgo.InteractionResponseData{
 							Content: "Error: 'min' value is bigger than 'max' value'",
 						},
 					})
@@ -156,13 +156,13 @@ func (cfg *config) Random() command {
 
 				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
-					Data: &discordgo.InteractionApplicationCommandResponseData{
+					Data: &discordgo.InteractionResponseData{
 						Content: fmt.Sprintf("%v", rand.Int63n(max-min)+min),
 					},
 				})
 			},
 			"alphabet": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-				n := i.Data.Options[0].Options[0].IntValue()
+				n := i.ApplicationCommandData().Options[0].Options[0].IntValue()
 
 				b := make([]rune, n)
 				for i := range b {
@@ -170,8 +170,8 @@ func (cfg *config) Random() command {
 				}
 
 				val := string(b)
-				if len(i.Data.Options[0].Options) >= 2 {
-					typ := i.Data.Options[0].Options[1].StringValue()
+				if len(i.ApplicationCommandData().Options[0].Options) >= 2 {
+					typ := i.ApplicationCommandData().Options[0].Options[1].StringValue()
 					switch typ {
 
 					case "uppercase":
@@ -185,13 +185,13 @@ func (cfg *config) Random() command {
 
 				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
-					Data: &discordgo.InteractionApplicationCommandResponseData{
+					Data: &discordgo.InteractionResponseData{
 						Content: fmt.Sprintf("%v", val),
 					},
 				})
 			},
 			"numeric": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-				n := i.Data.Options[0].Options[0].IntValue()
+				n := i.ApplicationCommandData().Options[0].Options[0].IntValue()
 
 				b := make([]rune, n)
 				for i := range b {
@@ -201,13 +201,13 @@ func (cfg *config) Random() command {
 				val := string(b)
 				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
-					Data: &discordgo.InteractionApplicationCommandResponseData{
+					Data: &discordgo.InteractionResponseData{
 						Content: fmt.Sprintf("%v", val),
 					},
 				})
 			},
 			"alphanumeric": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-				n := i.Data.Options[0].Options[0].IntValue()
+				n := i.ApplicationCommandData().Options[0].Options[0].IntValue()
 
 				b := make([]rune, n)
 				for i := range b {
@@ -215,8 +215,8 @@ func (cfg *config) Random() command {
 				}
 
 				val := string(b)
-				if len(i.Data.Options[0].Options) >= 2 {
-					typ := i.Data.Options[0].Options[1].StringValue()
+				if len(i.ApplicationCommandData().Options[0].Options) >= 2 {
+					typ := i.ApplicationCommandData().Options[0].Options[1].StringValue()
 					switch typ {
 
 					case "uppercase":
@@ -230,13 +230,13 @@ func (cfg *config) Random() command {
 
 				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
-					Data: &discordgo.InteractionApplicationCommandResponseData{
+					Data: &discordgo.InteractionResponseData{
 						Content: fmt.Sprintf("%v", val),
 					},
 				})
 			},
 			"special-alphanumeric": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-				n := i.Data.Options[0].Options[0].IntValue()
+				n := i.ApplicationCommandData().Options[0].Options[0].IntValue()
 
 				b := make([]rune, n)
 				for i := range b {
@@ -244,8 +244,8 @@ func (cfg *config) Random() command {
 				}
 
 				val := string(b)
-				if len(i.Data.Options[0].Options) >= 2 {
-					typ := i.Data.Options[0].Options[1].StringValue()
+				if len(i.ApplicationCommandData().Options[0].Options) >= 2 {
+					typ := i.ApplicationCommandData().Options[0].Options[1].StringValue()
 					switch typ {
 
 					case "uppercase":
@@ -258,7 +258,7 @@ func (cfg *config) Random() command {
 				}
 				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
-					Data: &discordgo.InteractionApplicationCommandResponseData{
+					Data: &discordgo.InteractionResponseData{
 						Content: fmt.Sprintf("%v", val),
 					},
 				})

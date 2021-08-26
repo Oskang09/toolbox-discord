@@ -15,6 +15,7 @@ personal discord toolbox bot mainly for speed up problem fixing by adding some u
 7. Keygen UUID and TUID ( timestmap based uid )
 8. Shortlink Creator
 9. File Serving
+10. Music Player Bot
 
 # Make your own
 
@@ -26,6 +27,10 @@ type config struct {
 		BotToken string `json:"botToken"` // Discord bot token
 		ServerID string `json:"serverId"` // Your personal server id
 	} `json:"discord"`
+	Services    map[string]bool        `json:"services"`
+	MusicPlayer struct {
+		VoiceChannel string `json:"voiceChannel"`
+	} `json:"musicPlayer"`
 	Ngrok struct {
 		Type  string   `json:"type"` // Start port in? http, tcp
 		Port  string   `json:"port"` // Port numbr
@@ -48,6 +53,72 @@ type config struct {
 2. Create `data.json` and leave it empty.
 3. Start your bot by `go run .` or build binary with `go build`.
 
+
+# Services
+
+| Service   | Description                                           | Config Key   | Dependecies & CLI |
+| --------- | ----------------------------------------------------- | ------------ | ----------------- |
+| base64    | base64 encode, decode                                 |              |                   |
+| datastore | datastore encode, decode                              |              |                   |
+| file      | file serving                                          | fileServer   | ngrok,ngrok.exe   |
+| keygen    | generate public, private key with RSA1024, 2048, 4096 |              |                   |
+| music     | music player bot                                      | musicPlayer  | ffmpeg.exe        |
+| ngrok     | hosted tunnel public ip                               | ngrok,domain | ngrok.exe         |
+| random    | random characters generator                           |              |                   |
+| shortcut  | short link creator                                    | shortlink    | ngrok,ngrok.exe   |
+| url       | url parsing reader                                    |              |                   |
+
+# Example Configuration
+
+```json
+{
+    "domain": "", // domain if your ngrok support custom domain else ignore it.
+    "services": {
+        "base64": false,
+        "datastore": false,
+        "file": false,
+        "keygen": false,
+        "music": true,
+        "ngrok": false,
+        "random": false,
+        "shortcut": false,
+        "url": false
+    },
+    "musicPlayer": {
+        "voiceChannel": "" // voice channel id 
+    },
+    "discord": {
+        "botToken": "", // bot token
+        "serverId": "" // server id
+    },
+    "ngrok": {
+        "type": "http",
+        "port": "12345",
+        "region": "ap",
+        "authtoken": "1UZHpPrSWEGZBE3sG1c3r7uX94E_vNAkwFNPiJ83ZgaXN5EJ",
+        "args": [
+            "-region=ap",
+            "-hostname=oskatb.ap.ngrok.io"
+        ]
+    },
+    "shortlink": {
+        "auth": false,
+        "username": "",
+        "password": ""
+    },
+    "fileServer": {
+        "auth": true,
+        "username": "oskang09",
+        "password": "oskang09"
+    }
+}
+```
+
+# Depdency CLI
+
+1. [ngrok.exe](https://ngrok.com/download)
+2. [ffmpeg.exe](https://ffmpeg.org/download.html)
+
 # Extra: Startup Application
 
-Start bot when computer startup, for Windows 10 users you can use "Windows + R" and type "shell:startup". After folder popup, just put built binrary shortcut inside. If you want move binary directly inside, you must move `lib` folder too, since it's depend on the `ngrok.exe` cli aslo `config.json` and `data.json`.
+Start bot when computer startup, for Windows 10 users you can use "Windows + R" and type "shell:startup". After folder popup, just put built binrary shortcut inside. Since some services required `cli`, aslo `config.json` and `data.json`.

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
+	"math/rand"
 	"os"
 	"os/exec"
 	"strconv"
@@ -20,9 +20,17 @@ var wd, _ = os.Getwd()
 
 // Music :
 type Music struct {
-	Instance *youtube.Video
-	Title    string
-	Display  string
+	instance *youtube.Video
+	stream   []byte
+
+	Title       string
+	Author      string
+	Description string
+	Display     struct {
+		URL    string
+		Width  int
+		Height int
+	}
 	Duration time.Duration
 }
 
@@ -39,10 +47,11 @@ type Player struct {
 	playing    bool
 	skip       bool
 	stop       bool
+	repeat     bool
 }
 
 func (player *Player) Start() {
-	player.play()
+	go player.play()
 }
 
 func (player *Player) Stop() {
@@ -53,20 +62,59 @@ func (player *Player) Skip() {
 	player.skip = true
 }
 
-func (player *Player) AddSong(link string) {
-	video, _ := player.client.GetVideo(link)
-	player.push(video)
-	player.play()
+func (player *Player) Shuffle() {
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(player.queue), func(i, j int) {
+		player.queue[i], player.queue[j] = player.queue[j], player.queue[i]
+	})
 }
 
-func (player *Player) AddPlayList(link string) {
-	playlist, err := player.client.GetPlaylist(link)
-	log.Println(err)
-	for _, vid := range playlist.Videos {
-		video, _ := player.client.VideoFromPlaylistEntry(vid)
-		player.push(video)
+func (player *Player) Repeat() bool {
+	player.repeat = !player.repeat
+	return player.repeat
+}
+
+func (player *Player) AddSong(link string) (*youtube.Video, error) {
+	video, err := player.client.GetVideo(link)
+	if err != nil {
+		return nil, err
 	}
-	player.play()
+
+	player.push(video)
+	go player.play()
+	return video, nil
+}
+
+func (player *Player) AddPlayList(link string) (int64, error) {
+	playlist, err := player.client.GetPlaylist(link)
+	if err != nil {
+		return 0, err
+	}
+
+	for _, v := range playlist.Videos {
+		go func(vid *youtube.PlaylistEntry) {
+			video, err := player.client.VideoFromPlaylistEntry(vid)
+			if err != nil {
+				return
+			}
+
+			player.push(video)
+		}(v)
+	}
+	go player.play()
+	return int64(len(playlist.Videos)), nil
+}
+
+func (player *Player) ClearQueue() {
+	player.queue = make([]Music, 0)
+}
+
+func (player *Player) Current() *Music {
+	return player.current
+}
+
+func (player *Player) ListQueueAndCurrent() (*Music, []Music) {
+	return player.current, player.queue
 }
 
 func (player *Player) play() {
@@ -80,8 +128,6 @@ func (player *Player) play() {
 	}
 
 	if player.current == nil {
-
-		log.Println(player.queue)
 		if len(player.queue) == 0 {
 			player.playing = false
 			player.channel.Disconnect()
@@ -89,28 +135,27 @@ func (player *Player) play() {
 			return
 		}
 
-		// TODO: shuffle handle
 		m := player.pop()
 		player.current = &m
 	}
 
+	if player.current.stream == nil {
+		video := player.current.instance
+		stream, _, _ := player.client.GetStream(video, video.Formats.WithAudioChannels().FindByQuality("tiny"))
+		defer stream.Close()
+
+		player.current.stream, _ = ioutil.ReadAll(stream)
+	}
+
 	go sendPCM(player.channel, player.pcmChannel)
-	video := player.current.Instance
-	stream, _, _ := player.client.GetStream(video, video.Formats.WithAudioChannels().FindByQuality("tiny"))
-	defer stream.Close()
-
-	streamBytes, _ := ioutil.ReadAll(stream)
-
 	run := exec.Command("ffmpeg.exe", "-i", "-", "-f", "s16le", "-ar", strconv.Itoa(frameRate), "-ac", strconv.Itoa(channels), "pipe:1")
 	run.Dir = wd + "/cli"
 
-	run.Stdin = bytes.NewReader(streamBytes)
+	run.Stdin = bytes.NewReader(player.current.stream)
 	stdout, err := run.StdoutPipe()
 	if err != nil {
 		return
 	}
-
-	io.Copy(run.Stdout, stream)
 
 	err = run.Start()
 	if err != nil {
@@ -128,23 +173,28 @@ func (player *Player) play() {
 	audiobuf := make([]int16, frameSize*channels)
 	for {
 		err = binary.Read(stdout, binary.LittleEndian, &audiobuf)
-		if err != nil {
-			log.Println(len(audiobuf))
-			fmt.Println("binary.Read: ", err)
+		if err == io.ErrUnexpectedEOF {
 			break
+		}
+
+		if err != nil {
+			fmt.Println("binary.Read: ", err)
+			return
 		}
 
 		if player.skip {
 			player.skip = false
 			player.current = nil
 			player.playing = false
-			player.play()
+			go player.play()
 			return
 		}
 
 		if player.stop {
 			player.stop = false
 			player.playing = false
+			player.channel.Disconnect()
+			player.channel = nil
 			return
 		}
 
@@ -152,9 +202,10 @@ func (player *Player) play() {
 	}
 
 	player.playing = false
-	// TODO: repeat handle
-	player.current = nil
-	player.play()
+	if !player.repeat {
+		player.current = nil
+	}
+	go player.play()
 }
 
 func (player *Player) pop() (m Music) {
@@ -163,31 +214,49 @@ func (player *Player) pop() (m Music) {
 }
 
 func (player *Player) push(video *youtube.Video) {
-	display := ""
-	if len(video.Thumbnails) > 0 {
-		display = video.Thumbnails[0].URL
+	music := Music{
+		instance:    video,
+		stream:      nil,
+		Title:       video.Title,
+		Duration:    video.Duration,
+		Author:      video.Author,
+		Description: video.Description,
 	}
 
-	player.queue = append(player.queue, Music{
-		Instance: video,
-		Display:  display,
-		Title:    video.Title,
-		Duration: video.Duration,
-	})
+	if len(video.Thumbnails) > 0 {
+		music.Display.URL = video.Thumbnails[0].URL
+		music.Display.Width = int(video.Thumbnails[0].Width)
+		music.Display.Height = int(video.Thumbnails[0].Height)
+	}
+
+	player.queue = append(player.queue, music)
 }
 
-func NewPlayer(discord *discordgo.Session, guildID string, channelID string) *Player {
+func (player *Player) CanContinue(s *discordgo.Session, i *discordgo.InteractionCreate) bool {
+	state, err := s.State.VoiceState(i.GuildID, i.Member.User.ID)
+	if err != nil {
+		return false
+	}
+
+	player.channelID = state.ChannelID
+	player.guildID = i.GuildID
+	player.discord = s
+	return true
+}
+
+func NewPlayer() *Player {
 	player := new(Player)
-	player.guildID = guildID
-	player.channelID = channelID
+	player.guildID = ""
+	player.channelID = ""
 	player.client = youtube.Client{}
-	player.discord = discord
+	player.discord = nil
 	player.channel = nil
 	player.current = nil
 	player.queue = make([]Music, 0)
 	player.pcmChannel = make(chan []int16, 2)
 	player.skip = false
 	player.stop = false
+	player.repeat = false
 	player.playing = false
 	return player
 }
