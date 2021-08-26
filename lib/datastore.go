@@ -77,7 +77,7 @@ func (cfg *config) Datastore() command {
 		Handler: map[string]commandHandler{
 			"encode": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				response := ""
-				value := i.Data.Options[0].Options[0].StringValue()
+				value := i.ApplicationCommandData().Options[0].Options[0].StringValue()
 				if !strings.HasPrefix(value, "/") {
 					value = "/" + value
 				}
@@ -91,14 +91,14 @@ func (cfg *config) Datastore() command {
 
 				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
-					Data: &discordgo.InteractionApplicationCommandResponseData{
+					Data: &discordgo.InteractionResponseData{
 						Embeds: []*discordgo.MessageEmbed{generateEmbed("DatastoreKey Encode", string(value), string(response))},
 					},
 				})
 			},
 			"decode": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				response := ""
-				value := i.Data.Options[0].Options[0].StringValue()
+				value := i.ApplicationCommandData().Options[0].Options[0].StringValue()
 				key, err := datastore.DecodeKey(value)
 				if err != nil {
 					response = "Error: " + err.Error()
@@ -108,7 +108,7 @@ func (cfg *config) Datastore() command {
 
 				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
-					Data: &discordgo.InteractionApplicationCommandResponseData{
+					Data: &discordgo.InteractionResponseData{
 						Embeds: []*discordgo.MessageEmbed{generateEmbed("DatastoreKey Decode", string(value), string(response))},
 					},
 				})

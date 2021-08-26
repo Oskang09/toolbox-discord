@@ -35,16 +35,16 @@ func (cfg *config) Shortcut() command {
 		},
 		Handler: map[string]commandHandler{
 			"redirect": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-				link := i.Data.Options[0].Options[0].StringValue()
+				link := i.ApplicationCommandData().Options[0].Options[0].StringValue()
 				fixed := time.Now().Format("06010215040500")
-				if len(i.Data.Options[0].Options) == 2 {
-					fixed = i.Data.Options[0].Options[1].StringValue()
+				if len(i.ApplicationCommandData().Options[0].Options) == 2 {
+					fixed = i.ApplicationCommandData().Options[0].Options[1].StringValue()
 				}
 
 				cfg.Data.Shortcuts[fixed] = link
 				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
-					Data: &discordgo.InteractionApplicationCommandResponseData{
+					Data: &discordgo.InteractionResponseData{
 						Embeds: []*discordgo.MessageEmbed{
 							{
 								Title: "Shortcut Link",

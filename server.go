@@ -36,8 +36,8 @@ func main() {
 	})
 
 	discord.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		if h, ok := commands[i.Data.Name]; ok {
-			h.Handler[i.Data.Options[0].Name](s, i)
+		if h, ok := commands[i.ApplicationCommandData().Name]; ok {
+			h.Handler[i.ApplicationCommandData().Options[0].Name](s, i)
 		}
 	})
 	if err := discord.Open(); err != nil {

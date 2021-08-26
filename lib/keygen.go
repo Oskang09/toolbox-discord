@@ -80,12 +80,12 @@ func (cfg *config) Keygen() command {
 		},
 		Handler: map[string]commandHandler{
 			"rsa": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-				bitSize := i.Data.Options[0].Options[0].IntValue()
+				bitSize := i.ApplicationCommandData().Options[0].Options[0].IntValue()
 				privKey, err := rsa.GenerateKey(rand.Reader, int(bitSize))
 				if err != nil {
 					s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 						Type: discordgo.InteractionResponseChannelMessageWithSource,
-						Data: &discordgo.InteractionApplicationCommandResponseData{
+						Data: &discordgo.InteractionResponseData{
 							Embeds: []*discordgo.MessageEmbed{generateError("RSA "+fmt.Sprintf("%v", bitSize)+" Keys", err)},
 						},
 					})
@@ -127,7 +127,7 @@ func (cfg *config) Keygen() command {
 				})
 				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
-					Data: &discordgo.InteractionApplicationCommandResponseData{
+					Data: &discordgo.InteractionResponseData{
 						Embeds: []*discordgo.MessageEmbed{generateSuccess("RSA " + fmt.Sprintf("%v", bitSize) + " Keys")},
 					},
 				})
@@ -135,7 +135,7 @@ func (cfg *config) Keygen() command {
 			"uuid": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
-					Data: &discordgo.InteractionApplicationCommandResponseData{
+					Data: &discordgo.InteractionResponseData{
 						Content: fmt.Sprintf("%v", uuid.NewV4()),
 					},
 				})
@@ -143,7 +143,7 @@ func (cfg *config) Keygen() command {
 			"tuid": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
-					Data: &discordgo.InteractionApplicationCommandResponseData{
+					Data: &discordgo.InteractionResponseData{
 						Content: fmt.Sprintf("%v", time.Now().Format("06010215040500")),
 					},
 				})

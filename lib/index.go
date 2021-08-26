@@ -25,8 +25,11 @@ type command struct {
 }
 
 type config struct {
-	Domain  string `json:"domain"`
-	Discord struct {
+	Domain   string                 `json:"domain"`
+	Services map[string]bool        `json:"services"`
+	State    map[string]interface{} `json:"-"`
+	Data     *data                  `json:"data"`
+	Discord  struct {
 		BotToken string `json:"botToken"`
 		ServerID string `json:"serverId"`
 	} `json:"discord"`
@@ -46,9 +49,14 @@ type config struct {
 		Username     string `json:"username"`
 		Password     string `json:"password"`
 	} `json:"fileServer"`
+}
 
-	State map[string]interface{} `json:"-"`
-	Data  *data                  `json:"data"`
+func (cfg config) hasServiceEnabled(service string) bool {
+	value, ok := cfg.Services[service]
+	if ok {
+		return value
+	}
+	return false
 }
 
 type data struct {
@@ -91,68 +99,74 @@ func New() (*config, map[string]command, func()) {
 
 	cfg.Data = data
 	if cfg.Data.Shortcuts == nil {
-		cfg.Data.Shortcuts = make(map[string]string, 0)
+		cfg.Data.Shortcuts = make(map[string]string)
 	}
 
 	if cfg.Data.Files == nil {
-		cfg.Data.Files = make(map[string]string, 0)
+		cfg.Data.Files = make(map[string]string)
 	}
 
-	cfg.State = make(map[string]interface{}, 0)
+	cfg.State = make(map[string]interface{})
 
 	template := template.Must(template.ParseGlob("html/*.html"))
 	handler := new(extension.RegexpHandler)
 
-	exp, _ := regexp.Compile("/shortcut/\\w+")
-	handler.HandleFunc(exp, func(w http.ResponseWriter, r *http.Request) {
-		if cfg.Shortlink.Authenticate {
-			responseCode, invalidPassword := extension.BasicAuth(cfg.Shortlink.Username, cfg.Shortlink.Password, w, r)
-			if invalidPassword {
-				template.ExecuteTemplate(w, "status.html", http.StatusUnauthorized)
-				return
-			}
+	if cfg.hasServiceEnabled("ngrok") {
+		if cfg.hasServiceEnabled("shortcut") {
+			exp, _ := regexp.Compile("/shortcut/\\w+")
+			handler.HandleFunc(exp, func(w http.ResponseWriter, r *http.Request) {
+				if cfg.Shortlink.Authenticate {
+					responseCode, invalidPassword := extension.BasicAuth(cfg.Shortlink.Username, cfg.Shortlink.Password, w, r)
+					if invalidPassword {
+						template.ExecuteTemplate(w, "status.html", http.StatusUnauthorized)
+						return
+					}
 
-			if responseCode != 0 {
-				w.WriteHeader(responseCode)
-				return
-			}
+					if responseCode != 0 {
+						w.WriteHeader(responseCode)
+						return
+					}
+				}
+
+				path := strings.TrimLeft(r.URL.Path, "/shortcut/")
+				if url, ok := cfg.Data.Shortcuts[path]; ok {
+					http.Redirect(w, r, url, http.StatusTemporaryRedirect)
+				} else {
+					template.ExecuteTemplate(w, "status.html", http.StatusNotFound)
+				}
+			})
 		}
 
-		path := strings.TrimLeft(r.URL.Path, "/shortcut/")
-		if url, ok := cfg.Data.Shortcuts[path]; ok {
-			http.Redirect(w, r, url, http.StatusTemporaryRedirect)
-		} else {
-			template.ExecuteTemplate(w, "status.html", http.StatusNotFound)
+		if cfg.hasServiceEnabled("file") {
+			exp, _ := regexp.Compile("/file/\\w+")
+			handler.HandleFunc(exp, func(w http.ResponseWriter, r *http.Request) {
+				if cfg.FileServer.Authenticate {
+					responseCode, invalidPassword := extension.BasicAuth(cfg.FileServer.Username, cfg.FileServer.Password, w, r)
+					if invalidPassword {
+						template.ExecuteTemplate(w, "status.html", http.StatusUnauthorized)
+						return
+					}
+
+					if responseCode != 0 {
+						w.WriteHeader(responseCode)
+						return
+					}
+				}
+
+				path := strings.TrimLeft(r.URL.Path, "/file/")
+				if file, ok := cfg.Data.Files[path]; ok {
+					if strings.HasSuffix(file, ".apk") {
+						w.Header().Add("Content-Type", "application/vnd.android.package-archive")
+					}
+					http.ServeFile(w, r, file)
+				} else {
+					template.ExecuteTemplate(w, "status.html", http.StatusNotFound)
+				}
+			})
 		}
-	})
 
-	exp, _ = regexp.Compile("/file/\\w+")
-	handler.HandleFunc(exp, func(w http.ResponseWriter, r *http.Request) {
-		if cfg.FileServer.Authenticate {
-			responseCode, invalidPassword := extension.BasicAuth(cfg.FileServer.Username, cfg.FileServer.Password, w, r)
-			if invalidPassword {
-				template.ExecuteTemplate(w, "status.html", http.StatusUnauthorized)
-				return
-			}
-
-			if responseCode != 0 {
-				w.WriteHeader(responseCode)
-				return
-			}
-		}
-
-		path := strings.TrimLeft(r.URL.Path, "/file/")
-		if file, ok := cfg.Data.Files[path]; ok {
-			if strings.HasSuffix(file, ".apk") {
-				w.Header().Add("Content-Type", "application/vnd.android.package-archive")
-			}
-			http.ServeFile(w, r, file)
-		} else {
-			template.ExecuteTemplate(w, "status.html", http.StatusNotFound)
-		}
-	})
-
-	go http.ListenAndServe(":"+cfg.Ngrok.Port, handler)
+		go http.ListenAndServe(":"+cfg.Ngrok.Port, handler)
+	}
 
 	return cfg, getCommands(cfg), func() {
 		defer file.Close()
@@ -169,16 +183,20 @@ func New() (*config, map[string]command, func()) {
 }
 
 func getCommands(cfg *config) map[string]command {
-	commandMap := make(map[string]command, 0)
+	commandMap := make(map[string]command)
 	rValue := reflect.ValueOf(cfg)
 
 	fmt.Println("Registered Services :-")
 	fmt.Println("")
+	count := 0
 	for i := 0; i < rValue.NumMethod(); i++ {
 		method := rValue.Method(i)
 		rResponse := method.Call(nil)[0].Interface().(command)
-		commandMap[rResponse.Registry.Name] = rResponse
-		fmt.Println("[" + strconv.Itoa(i+1) + "] " + rResponse.Registry.Name)
+		if cfg.hasServiceEnabled(rResponse.Registry.Name) {
+			count += 1
+			commandMap[rResponse.Registry.Name] = rResponse
+			fmt.Println("[" + strconv.Itoa(count) + "] " + rResponse.Registry.Name)
+		}
 	}
 	return commandMap
 }
