@@ -3,6 +3,7 @@ package lib
 import (
 	"errors"
 	"fmt"
+	"log"
 	"main/lib/music"
 
 	"github.com/bwmarrin/discordgo"
@@ -128,7 +129,7 @@ func (cfg *config) Music() command {
 				}
 
 				current := player.Current()
-				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
 					Data: &discordgo.InteractionResponseData{
 						Embeds: []*discordgo.MessageEmbed{
@@ -144,11 +145,11 @@ func (cfg *config) Music() command {
 								Color:       5763719,
 								Title:       current.Title,
 								Description: current.Description,
-								Timestamp:   current.Duration.String(),
 							},
 						},
 					},
 				})
+				log.Println(current.Title, err)
 			},
 			"shuffle": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				if !player.CanContinue(s, i) {
@@ -178,17 +179,8 @@ func (cfg *config) Music() command {
 					return
 				}
 
-				player.Skip()
-				replySuccess(s, i, "Current song have been skipped")
-			},
-			"skip": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-				if !player.CanContinue(s, i) {
-					replyError(s, i, errNotInVoiceChannel)
-					return
-				}
-
-				player.Skip()
-				replySuccess(s, i, "Current song have been skipped")
+				player.Start()
+				replySuccess(s, i, "I'm start playing now :)")
 			},
 			"stop": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				if !player.CanContinue(s, i) {
@@ -198,6 +190,15 @@ func (cfg *config) Music() command {
 
 				player.Stop()
 				replySuccess(s, i, "I'm not talking anymore :(")
+			},
+			"skip": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+				if !player.CanContinue(s, i) {
+					replyError(s, i, errNotInVoiceChannel)
+					return
+				}
+
+				player.Skip()
+				replySuccess(s, i, "Current song have been skipped")
 			},
 			"list": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				if !player.CanContinue(s, i) {

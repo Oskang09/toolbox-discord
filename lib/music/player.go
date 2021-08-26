@@ -31,7 +31,6 @@ type Music struct {
 		Width  int
 		Height int
 	}
-	Duration time.Duration
 }
 
 // Player :
@@ -218,7 +217,6 @@ func (player *Player) push(video *youtube.Video) {
 		instance:    video,
 		stream:      nil,
 		Title:       video.Title,
-		Duration:    video.Duration,
 		Author:      video.Author,
 		Description: video.Description,
 	}

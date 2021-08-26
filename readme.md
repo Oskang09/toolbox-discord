@@ -15,7 +15,7 @@ personal discord toolbox bot mainly for speed up problem fixing by adding some u
 7. Keygen UUID and TUID ( timestmap based uid )
 8. Shortlink Creator
 9. File Serving
-10. Music Player Bot
+10. Music Player Bot ( fully indenpendent from config, it can support multiple server's bot )
 
 # Make your own
 
@@ -62,7 +62,7 @@ type config struct {
 | datastore | datastore encode, decode                              |              |                   |
 | file      | file serving                                          | fileServer   | ngrok,ngrok.exe   |
 | keygen    | generate public, private key with RSA1024, 2048, 4096 |              |                   |
-| music     | music player bot                                      | musicPlayer  | ffmpeg.exe        |
+| music     | music player bot                                      |              | ffmpeg.exe        |
 | ngrok     | hosted tunnel public ip                               | ngrok,domain | ngrok.exe         |
 | random    | random characters generator                           |              |                   |
 | shortcut  | short link creator                                    | shortlink    | ngrok,ngrok.exe   |
