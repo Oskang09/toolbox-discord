@@ -16,7 +16,7 @@ personal discord toolbox bot mainly for speed up problem fixing by adding some u
 7. Keygen UUID and TUID ( timestmap based uid )
 8. Shortlink Creator
 9. File Serving
-10. Music Player Bot ( fully indenpendent from config, it can support multiple server's bot )
+10. Music Player Bot [ Youtube Songs Only ] ( fully indenpendent from config, it can support multiple server's bot )
 
 # Make your own
 
