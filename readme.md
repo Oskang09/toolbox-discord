@@ -1,4 +1,5 @@
 ![image](https://user-images.githubusercontent.com/15674107/119238117-3503b280-bb73-11eb-9e58-bceca156d728.png)
+![image](https://user-images.githubusercontent.com/15674107/131013217-fd7a3664-47df-418c-b6ae-44f2bcd79e72.png)
 
 # toolbox
 
@@ -28,9 +29,6 @@ type config struct {
 		ServerID string `json:"serverId"` // Your personal server id
 	} `json:"discord"`
 	Services    map[string]bool        `json:"services"`
-	MusicPlayer struct {
-		VoiceChannel string `json:"voiceChannel"`
-	} `json:"musicPlayer"`
 	Ngrok struct {
 		Type  string   `json:"type"` // Start port in? http, tcp
 		Port  string   `json:"port"` // Port numbr
