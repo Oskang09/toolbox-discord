@@ -21,7 +21,7 @@ const banner = `
 
 func main() {
 
-	fmt.Println(banner)
+	fmt.Print(banner)
 
 	config, commands, closer := lib.New()
 	discord, err := discordgo.New("Bot " + config.Discord.BotToken)

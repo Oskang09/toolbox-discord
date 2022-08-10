@@ -191,11 +191,15 @@ func getCommands(cfg *config) map[string]command {
 	count := 0
 	for i := 0; i < rValue.NumMethod(); i++ {
 		method := rValue.Method(i)
-		rResponse := method.Call(nil)[0].Interface().(command)
-		if cfg.hasServiceEnabled(rResponse.Registry.Name) {
+		rResponse := method.Call(nil)
+		serviceString := rResponse[0].Interface().(string)
+		if cfg.hasServiceEnabled(serviceString) {
+			fmt.Println("[" + strconv.Itoa(count) + "] " + serviceString)
+
+			initializer := rResponse[1].Interface().(func() command)
+			cmd := initializer()
 			count += 1
-			commandMap[rResponse.Registry.Name] = rResponse
-			fmt.Println("[" + strconv.Itoa(count) + "] " + rResponse.Registry.Name)
+			commandMap[cmd.Registry.Name] = cmd
 		}
 	}
 	return commandMap
