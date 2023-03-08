@@ -123,3 +123,10 @@ type config struct {
 # Extra: Startup Application
 
 Start bot when computer startup, for Windows 10 users you can use "Windows + R" and type "shell:startup". After folder popup, just put built binrary shortcut inside. Since some services required `cli`, aslo `config.json` and `data.json`.
+
+
+# Docker Build
+
+```
+$ docker buildx build . -t IMAGE_NAME:VERSION --platform=linux/amd64
+```
