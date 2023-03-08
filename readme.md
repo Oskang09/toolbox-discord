@@ -11,13 +11,9 @@ personal discord toolbox bot mainly for speed up problem fixing by adding some u
 2. Base64 Encode, Decode
 3. Datastore Key Encode, Decode
 4. URL Parsing ( to have a better view )
-5. Ngrok IP ( get hosted public ip )
-6. Random characters generator ( alphabet, numeric, symbol )
-7. Keygen UUID and TUID ( timestmap based uid )
-8. Shortlink Creator
-9. File Serving
-10. Music Player Bot [ Youtube Songs Only ] ( fully indenpendent from config, it can support multiple server's bot )
-11. Sqlike `types.Key` Encode, Decode
+5. Random characters generator ( alphabet, numeric, symbol )
+6. Keygen UUID and TUID ( timestmap based uid )
+7. Sqlike `types.Key` Encode, Decode
 
 # Make your own
 
@@ -30,22 +26,6 @@ type config struct {
 		ServerID string `json:"serverId"` // Your personal server id
 	} `json:"discord"`
 	Services    map[string]bool        `json:"services"`
-	Ngrok struct {
-		Type  string   `json:"type"` // Start port in? http, tcp
-		Port  string   `json:"port"` // Port numbr
-		Token string   `json:"authtoken"`// AuthToken
-		Args  []string `json:"args"` // Extra arguments for setup -auth, -region, 
-	} `json:"ngrok"`
-	Shortlink struct {
-		Authenticate bool `json:"auth"` // use authenticate
-		Username  string `json:"username"` // Auth username
-		Password  string `json:"password"` // Auth password
-	} `json:"shortlink"`
-	FileServer struct {
-		Authenticate bool `json:"auth"` // use authenticate
-		Username  string `json:"username"` // Auth username
-		Password  string `json:"password"` // Auth password
-	} `json:"fileServer"`
 }
 ```
 
@@ -72,53 +52,21 @@ type config struct {
 
 ```json
 {
-    "domain": "", // domain if your ngrok support custom domain else ignore it.
     "services": {
-        "base64": false,
-        "datastore": false,
-        "file": false,
-        "keygen": false,
-        "music": true,
-        "ngrok": false,
-        "random": false,
-        "shortcut": false,
-        "url": false,
-        "sqlike": false
-    },
-    "musicPlayer": {
-        "voiceChannel": "" // voice channel id 
+        "base64": true,
+        "datastore": true,
+        "file": true,
+        "keygen": true,
+        "random": true,
+        "url": true,
+        "sqlike": true
     },
     "discord": {
         "botToken": "", // bot token
         "serverId": "" // server id
-    },
-    "ngrok": {
-        "type": "http",
-        "port": "12345",
-        "region": "ap",
-        "authtoken": "1UZHpPrSWEGZBE3sG1c3r7uX94E_vNAkwFNPiJ83ZgaXN5EJ",
-        "args": [
-            "-region=ap",
-            "-hostname=oskatb.ap.ngrok.io"
-        ]
-    },
-    "shortlink": {
-        "auth": false,
-        "username": "",
-        "password": ""
-    },
-    "fileServer": {
-        "auth": true,
-        "username": "oskang09",
-        "password": "oskang09"
     }
 }
 ```
-
-# Depdency CLI
-
-1. [ngrok.exe](https://ngrok.com/download)
-2. [ffmpeg.exe](https://ffmpeg.org/download.html)
 
 # Extra: Startup Application
 
