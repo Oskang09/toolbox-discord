@@ -134,10 +134,11 @@ func (cfg *config) Keygen() (string, func() command) {
 					})
 				},
 				"uuid": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+					uuid, _ := uuid.NewV4()
 					s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 						Type: discordgo.InteractionResponseChannelMessageWithSource,
 						Data: &discordgo.InteractionResponseData{
-							Content: fmt.Sprintf("%v", uuid.NewV4()),
+							Content: fmt.Sprintf("%v", uuid),
 						},
 					})
 				},

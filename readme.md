@@ -17,6 +17,7 @@ personal discord toolbox bot mainly for speed up problem fixing by adding some u
 8. Shortlink Creator
 9. File Serving
 10. Music Player Bot [ Youtube Songs Only ] ( fully indenpendent from config, it can support multiple server's bot )
+11. Sqlike `types.Key` Encode, Decode
 
 # Make your own
 
@@ -65,6 +66,7 @@ type config struct {
 | random    | random characters generator                           |              |                   |
 | shortcut  | short link creator                                    | shortlink    | ngrok,ngrok.exe   |
 | url       | url parsing reader                                    |              |                   |
+| sqlike    | sqlike encode, decode                                 |              |                   |
 
 # Example Configuration
 
@@ -80,7 +82,8 @@ type config struct {
         "ngrok": false,
         "random": false,
         "shortcut": false,
-        "url": false
+        "url": false,
+        "sqlike": false
     },
     "musicPlayer": {
         "voiceChannel": "" // voice channel id 
